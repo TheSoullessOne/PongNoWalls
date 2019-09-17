@@ -3,6 +3,9 @@ from colors import *
 from pygame.math import Vector2
 
 
+ball_image = pygame.image.load('Images/ball.png')
+
+
 def vector2(xy_tuple, scale):
     v = Vector2()
     v[0], v[1] = xy_tuple[0], xy_tuple[1]
@@ -23,6 +26,7 @@ class Ball:
 
     def draw(self, surface):
         pygame.draw.rect(surface, WHITE, (self.x, self.y, self.width, self.height))
+        surface.blit(ball_image, (self.x, self.y))
 
     def move(self):
         self.x -= (self.vel * (self.movex / 10))
@@ -30,9 +34,6 @@ class Ball:
         self.rect.topleft = self.x, self.y
 
     def collide(self, paddles):
-        # if self.y > 493 or self.y < 7:
-        #     self.movey *= -1
-
         if self.rect.colliderect(paddles[0]) or self.rect.colliderect(paddles[1]):
             self.movex *= -1
             self.vel += 0.2
@@ -43,6 +44,7 @@ class Ball:
 
     def reset(self, x, y,  init_vel):
         if self.x < 0 or self.x > 800 or self.y < 0 or self.y > 500:
+            scorer_string = ''
             if self.x < 400 and (self.y < 0 or self.y > 500):
                 scorer_string = 'player'
             if self.x > 400 and (self.y < 0 or self.y > 500):
@@ -57,7 +59,7 @@ class Ball:
             self.movey = init_vel[1]
             self.vel = 1
             return True, scorer_string
-        return False, ' '
+        return False, ''
 
     def get_vel(self):
         return self.movex, self.movey
