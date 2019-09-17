@@ -1,75 +1,29 @@
 import pygame
 import sys
 from pygame.locals import *
-from pygame.math import Vector2
-import random
+from colors import *
+from ball import Ball
+from paddle import VerticalPaddle, HorizontalPaddle
 
 
 GAME_WIDTH = 800
-GAME_HEIGHT = 500
+GAME_HEIGHT = 600
+DISPLAY = (GAME_WIDTH, GAME_HEIGHT)
 BALL_SPEED = 2
 PADDLE_SPEED = 3
-
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-
-
-class Ball:
-    def __init__(self, rect, radius=20, bg_color=WHITE, velocity=(1, 1), scale=1):
-        self.rect = pygame.Rect(rect)
-        self.radius = radius
-        self.color = bg_color
-        self.velocity = vector2(velocity, scale)
-
-    def __str__(self):
-        return 'This is a ball with a radius {:2f}'.format(self.radius)
-
-    def __repr__(self):
-        return 'Ball(radius={:2f})'.format(self.radius)
-
-    def get_radius(self):
-        return self.radius
-
-    def get_color(self):
-        return self.color
-
-    def get_velocity(self):
-        return self.velocity
-
-    def get_rect(self):
-        return self.rect
-
-    def move_ball(self):
-        self.rect.left += self.velocity[0]
-        self.rect.top += self.velocity[1]
+clock = pygame.time.Clock()
+pygame.init()
+pygame.display.set_caption('Pong')
+surface = pygame.display.set_mode(DISPLAY, 0, 32)
+surface.fill(BLACK)
+pygame.mixer.music.load('Sounds/background.mp3')
+pygame.mixer.music.play(-1, 0.0)
+musicPlaying = True
+bar1_header = 'Computer: '
+bar2_header = 'Player: '
 
 
-class Paddle:
-    def __init__(self, rect, height=100, width=50):
-        self.rect = pygame.Rect(rect)
-        self.height = height
-        self.width = width
-
-    def __str__(self):
-        return 'This is a pong paddle with a height of {:2f} and width of {:2f}'.format(self.height, self.width)
-
-    def __repr__(self):
-        return 'Paddle(height={:2f}, width={:2f}'.format(self.height, self.width)
-
-    def get_height(self):
-        return self.height
-
-    def get_width(self):
-        return self.width
-
-
-def vector2(xy_tuple, scale):
-    v = Vector2()
-    v[0], v[1] = xy_tuple[0], xy_tuple[1]
-    return v * scale
-
-
-def get_initial_ball_vel():
+def random_ball_vel():
     x = random.randint(-2, 2)
     while x == 0:
         x = random.randint(-2, 2)
@@ -80,31 +34,63 @@ def get_initial_ball_vel():
 
 
 def play():
-    pygame.init()
-    surface = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT), 0, 32)
-    pygame.display.set_caption('Pong')
-    surface.fill(BLACK)
-
-    pygame.mixer.music.load('Sounds/background.mp3')
-    pygame.mixer.music.play(-1, 0.0)
-    musicPlaying = True
-
-    init_velocity = get_initial_ball_vel()
-    ball = Ball(rect=(GAME_WIDTH / 2, GAME_HEIGHT / 2, 40, 40), velocity=init_velocity)
-    #  pygame.draw.rect(surface, ball.get_color(), ball.get_rect(), 0)
-    ballRect = pygame.draw.circle(surface, ball.get_color(), (int(GAME_WIDTH / 2), int(GAME_HEIGHT / 2)), ball.get_radius(), 0)
+    init_velocity = random_ball_vel()
+    ball = Ball(400, 250, 15, 15, init_velocity)
+    paddles = []
+    v_paddle_player = VerticalPaddle(750, 200, 20, 100)
+    v_paddle_computer = VerticalPaddle(30, 200, 20, 100)
+    paddles.append(v_paddle_player.rect)
+    paddles.append(v_paddle_computer.rect)
+    line_color = get_random_color()
+    font = pygame.font.SysFont("calibri", 40)
+    bar1_score = 0
+    bar2_score = 0
+    header1 = font.render(str(bar1_header), True, (255, 255, 255))
+    header2 = font.render(str(bar2_header), True, (255, 255, 255))
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
 
-        print(ball.get_velocity())
-        ballRect.left += ball.get_velocity()[0]
-        ballRect.top += ball.get_velocity()[1]
-        print(ballRect.left, ballRect.top)
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP] and v_paddle_player.y > 0:
+            v_paddle_player.move_up()
+        if keys[pygame.K_DOWN] and v_paddle_player.y < (GAME_HEIGHT - v_paddle_player.height - 100):
+            v_paddle_player.move_down()
+
+        #  if keys[pygame.K_LEFT] and v_paddle_player.x > 0:
+        #    v_paddle_player.move_left()
+        #  if keys[pygame.K_RIGHT] and v_paddle_player.x < (GAME_WIDTH - v_paddle_player.height):
+        #    v_paddle_player.move_right()
+
+        surface.fill(BLACK)
+
+        v_paddle_player.draw(surface)
+        v_paddle_computer.get_move(ball.rect)
+        v_paddle_computer.draw(surface)
+        ball.draw(surface)
+        ball.move()
+        ball.collide(paddles)
+        reset = []
+        did_reset, scorer = ball.reset(GAME_WIDTH / 2, GAME_HEIGHT / 2, random_ball_vel())
+        if did_reset:
+            line_color = get_random_color()
+            if scorer == 'player':
+                bar2_score += 1
+                score2 = font.render(str(bar2_score), True, (255, 255, 255))
+            elif scorer == 'computer':
+                bar1_score += 1
+                score1 = font.render(str(bar1_score), True, (255, 255, 255))
+        pygame.draw.line(surface, line_color, (GAME_WIDTH / 2, GAME_HEIGHT - 100), (GAME_WIDTH / 2, 0))
+        pygame.draw.rect(surface, BLUE, (0, GAME_HEIGHT - 100, GAME_WIDTH, 100))
+        score1 = font.render(str(bar1_score), True, (255, 255, 255))
+        score2 = font.render(str(bar2_score), True, (255, 255, 255))
+        surface.blit(header1, (200, GAME_HEIGHT - 100))
+        surface.blit(score1, (350, GAME_HEIGHT - 50))
+        surface.blit(header2, (425, GAME_HEIGHT - 100))
+        surface.blit(score2, (425, GAME_HEIGHT - 50))
         pygame.display.update()
-        ballRect = pygame.draw.circle(surface, ball.get_color(), (int(GAME_WIDTH / 2), int(GAME_HEIGHT / 2)), ball.get_radius(), 0)
 
 
 play()
