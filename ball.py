@@ -30,21 +30,27 @@ class Ball:
         self.rect.topleft = self.x, self.y
 
     def collide(self, paddles):
-        if self.y > 493 or self.y < 7:
-            self.movey *= -1
+        # if self.y > 493 or self.y < 7:
+        #     self.movey *= -1
 
         if self.rect.colliderect(paddles[0]) or self.rect.colliderect(paddles[1]):
             self.movex *= -1
             self.vel += 0.2
 
+        if self.rect.colliderect(paddles[2]) or self.rect.colliderect(paddles[3]) or self.rect.colliderect(paddles[4]) or self.rect.colliderect(paddles[5]):
+            self.movey *= -1
+            self.vel += 0.1
+
     def reset(self, x, y,  init_vel):
-        if self.x < 0 or self.x > 800:
+        if self.x < 0 or self.x > 800 or self.y < 0 or self.y > 500:
+            if self.x < 400 and (self.y < 0 or self.y > 500):
+                scorer_string = 'player'
+            if self.x > 400 and (self.y < 0 or self.y > 500):
+                scorer_string = 'computer'
             if self.x < 0:
                 scorer_string = 'player'
-                print('player scored!')
             elif self.x > 800:
                 scorer_string = 'computer'
-                print('comp scored :(')
             self.x = x
             self.y = y
             self.movex = init_vel[0]

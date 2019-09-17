@@ -37,10 +37,18 @@ def play():
     init_velocity = random_ball_vel()
     ball = Ball(400, 250, 15, 15, init_velocity)
     paddles = []
-    v_paddle_player = VerticalPaddle(750, 200, 20, 100)
-    v_paddle_computer = VerticalPaddle(30, 200, 20, 100)
+    v_paddle_player = VerticalPaddle(770, 200, 10, 100)
+    v_paddle_computer = VerticalPaddle(20, 200, 10, 100)
+    ht_paddle_player = HorizontalPaddle(550, 10, 100, 10)
+    hb_paddle_player = HorizontalPaddle(550, 480, 100, 10)
+    ht_paddle_computer = HorizontalPaddle(250, 10, 100, 10)
+    hb_paddle_computer = HorizontalPaddle(250, 480, 100, 10)
     paddles.append(v_paddle_player.rect)
     paddles.append(v_paddle_computer.rect)
+    paddles.append(ht_paddle_computer)
+    paddles.append(hb_paddle_computer)
+    paddles.append(ht_paddle_player)
+    paddles.append(hb_paddle_player)
     line_color = get_random_color()
     font = pygame.font.SysFont("calibri", 40)
     bar1_score = 0
@@ -59,14 +67,22 @@ def play():
         if keys[pygame.K_DOWN] and v_paddle_player.y < (GAME_HEIGHT - v_paddle_player.height - 100):
             v_paddle_player.move_down()
 
-        #  if keys[pygame.K_LEFT] and v_paddle_player.x > 0:
-        #    v_paddle_player.move_left()
-        #  if keys[pygame.K_RIGHT] and v_paddle_player.x < (GAME_WIDTH - v_paddle_player.height):
-        #    v_paddle_player.move_right()
+        if keys[pygame.K_LEFT] and hb_paddle_player.rect.left > 400:
+            ht_paddle_player.move_left()
+            hb_paddle_player.move_left()
+        if keys[pygame.K_RIGHT] and hb_paddle_player.rect.right < (GAME_WIDTH - 30):
+            ht_paddle_player.move_right()
+            hb_paddle_player.move_right()
 
         surface.fill(BLACK)
 
         v_paddle_player.draw(surface)
+        ht_paddle_player.draw(surface)
+        hb_paddle_player.draw(surface)
+        ht_paddle_computer.get_move(ball.rect)
+        hb_paddle_computer.get_move(ball.rect)
+        ht_paddle_computer.draw(surface)
+        hb_paddle_computer.draw(surface)
         v_paddle_computer.get_move(ball.rect)
         v_paddle_computer.draw(surface)
         ball.draw(surface)
@@ -82,7 +98,13 @@ def play():
             elif scorer == 'computer':
                 bar1_score += 1
                 score1 = font.render(str(bar1_score), True, (255, 255, 255))
-        pygame.draw.line(surface, line_color, (GAME_WIDTH / 2, GAME_HEIGHT - 100), (GAME_WIDTH / 2, 0))
+            v_paddle_player.reset(770, 200, surface)
+            v_paddle_computer.reset(20, 200, surface)
+            ht_paddle_computer.reset(250, 10, surface)
+            hb_paddle_computer.reset(250, 480, surface)
+            ht_paddle_player.reset(550, 10, surface)
+            hb_paddle_player.reset(550, 480, surface)
+        pygame.draw.line(surface, line_color, (GAME_WIDTH / 2, GAME_HEIGHT - 100), (GAME_WIDTH / 2, 0), 5)
         pygame.draw.rect(surface, BLUE, (0, GAME_HEIGHT - 100, GAME_WIDTH, 100))
         score1 = font.render(str(bar1_score), True, (255, 255, 255))
         score2 = font.render(str(bar2_score), True, (255, 255, 255))

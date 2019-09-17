@@ -12,5 +12,4 @@ def get_random_color():
     colorz = random.randint(0, 255)
     color = [colorx, colory, colorz]
     random.shuffle(color)
-    print(color)
     return tuple(color)
