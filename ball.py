@@ -1,8 +1,6 @@
 import pygame
 from colors import *
 from pygame.math import Vector2
-from pygame.locals import *
-
 
 ball_image = pygame.image.load('Images/ball.png')
 
@@ -41,7 +39,8 @@ class Ball:
             collision_sound = pygame.mixer.Sound('Sounds/paddle_hit.wav')
             collision_sound.play()
 
-        if self.rect.colliderect(paddles[2]) or self.rect.colliderect(paddles[3]) or self.rect.colliderect(paddles[4]) or self.rect.colliderect(paddles[5]):
+        if self.rect.colliderect(paddles[2]) or self.rect.colliderect(paddles[3]) or self.rect.colliderect(paddles[4]) \
+                or self.rect.colliderect(paddles[5]):
             self.movey *= -1
             self.vel += 0.1
             collision_sound = pygame.mixer.Sound('Sounds/paddle_hit.wav')
