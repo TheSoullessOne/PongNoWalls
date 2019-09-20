@@ -19,9 +19,11 @@ surface.fill(BLACK)
 pygame.mixer.music.load('Sounds/background.mp3')
 pygame.mixer.music.play(-1, 0.0)
 musicPlaying = True
-wait_screen = 'Press Enter to play....'
+wait_screen = 'First to 5 Wins, Press Enter to play....'
 bar1_header = 'Computer: '
 bar2_header = 'Player: '
+win_end_screen = 'You have won!'
+lose_end_screen = 'Aww man, you lost to a computer...'
 
 
 def random_ball_vel():
@@ -57,7 +59,7 @@ def play():
     wait = font.render(str(wait_screen), True, (255, 255, 255))
     header1 = font.render(str(bar1_header), True, (255, 255, 255))
     header2 = font.render(str(bar2_header), True, (255, 255, 255))
-    surface.blit(wait, ((GAME_WIDTH - 350) / 2, (GAME_HEIGHT - 100) / 2))
+    surface.blit(wait, ((GAME_WIDTH - 500) / 2, (GAME_HEIGHT - 200) / 2))
 
     pygame.draw.line(surface, line_color, (GAME_WIDTH / 2, GAME_HEIGHT - 100), (GAME_WIDTH / 2, 0), 5)
     pygame.draw.rect(surface, BLUE, (0, GAME_HEIGHT - 100, GAME_WIDTH, 100))
@@ -87,6 +89,23 @@ def play():
                 sys.exit()
             elif event.type == KEYDOWN:
                 ready = True
+
+        if (bar1_score == 5 or bar2_score == 5) and ready:
+            ready = False
+            if bar1_score == 5:
+                surface.fill(BLACK)
+                end_screen = font.render(str(lose_end_screen), True, (255, 255, 255))
+                surface.blit(end_screen, ((GAME_WIDTH - 500) / 2, (GAME_HEIGHT - 100) / 2))
+                pygame.mixer.music.load('Sounds/player_lose.mp3')
+                pygame.mixer.music.play(-1, 0.0)
+            elif bar2_score == 5:
+                surface.fill(BLACK)
+                end_screen = font.render(str(win_end_screen), True, (255, 255, 255))
+                surface.blit(end_screen, ((GAME_WIDTH - 300) / 2, (GAME_HEIGHT - 100) / 2))
+                pygame.mixer.music.load('Sounds/player_win.mp3')
+                pygame.mixer.music.play(-1, 0.0)
+            pygame.display.update()
+
         if ready:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_UP] and v_paddle_player.y > 0:
@@ -115,16 +134,17 @@ def play():
             ball.move()
             ball.collide(paddles)
             did_reset, scorer = ball.reset(GAME_WIDTH / 2, GAME_HEIGHT / 2, random_ball_vel())
+
             if did_reset:
                 line_color = get_random_color()
                 if scorer == 'player':
                     bar2_score += 1
-                    score2 = font.render(str(bar2_score), True, (255, 255, 255))
+                    # score2 = font.render(str(bar2_score), True, (255, 255, 255))
                     score_sound = pygame.mixer.Sound('Sounds/player_score.wav')
                     score_sound.play()
                 elif scorer == 'computer':
                     bar1_score += 1
-                    score1 = font.render(str(bar1_score), True, (255, 255, 255))
+                    # score1 = font.render(str(bar1_score), True, (255, 255, 255))
                     score_sound = pygame.mixer.Sound('Sounds/computer_score.wav')
                     score_sound.play()
                 v_paddle_player.reset(770, 200, surface)
